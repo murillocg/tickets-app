@@ -2,31 +2,46 @@ package com.murillocg.ticketapp.controller;
 
 
 import com.murillocg.ticketapp.entity.Ticket;
+import com.murillocg.ticketapp.entity.User;
 import com.murillocg.ticketapp.enums.Status;
 import com.murillocg.ticketapp.model.NewTicketRequest;
+import com.murillocg.ticketapp.model.TicketDTO;
+import com.murillocg.ticketapp.model.TicketRatingRequest;
 import com.murillocg.ticketapp.repository.TicketRepository;
+import com.murillocg.ticketapp.security.AuthenticationService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+@Transactional
 @RestController
 public class TicketController {
 
     private final TicketRepository ticketRepository;
 
+    private final AuthenticationService authenticationService;
+
     @Autowired
-    public TicketController(TicketRepository ticketRepository) {
+    public TicketController(TicketRepository ticketRepository, AuthenticationService authenticationService) {
         this.ticketRepository = ticketRepository;
+        this.authenticationService = authenticationService;
     }
 
-    @PostMapping("/tickets")
-    public void createTicket(@RequestBody @Validated NewTicketRequest newTicketRequest) {
+    @PostMapping("/api/tickets")
+    public void createTicket(@RequestBody @Valid NewTicketRequest newTicketRequest) {
 
+        User currentUser = authenticationService.getCurrentUser();
         Ticket newTicket = new Ticket();
+        newTicket.setCreatedDate(LocalDateTime.now());
+        newTicket.setUser(currentUser);
         newTicket.setStatus(Status.OPEN);
         newTicket.setMessage(newTicketRequest.message());
         newTicket.setSubject(newTicketRequest.subject());
@@ -35,24 +50,47 @@ public class TicketController {
         //TODO: notify admin that a ticket has been created
     }
 
-    @PostMapping("/tickets/{id}/rate")
-    public ResponseEntity<Void> rateSolvedTicket(@PathVariable Long id) {
+    @PostMapping("/api/tickets/{id}/rating")
+    public ResponseEntity<Void> rateSolvedTicket(@PathVariable Long id,
+                                                 @RequestBody @Valid TicketRatingRequest ticketRatingRequest) {
         Ticket ticketToRate = ticketRepository.getReferenceById(id);
-        //TODO: are you the user that has created this ticket?
+
+        User currentUser = authenticationService.getCurrentUser();
+        if (!ticketToRate.getUser().equals(currentUser)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         if (ticketToRate.getStatus() != Status.CLOSED) {
             return ResponseEntity.badRequest().build();
         }
-        ticketToRate.setRating(5);
+        ticketToRate.setRating(ticketRatingRequest.rating());
         ticketRepository.save(ticketToRate);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/tickets")
+    @GetMapping("/api/tickets")
     @Transactional(readOnly = true)
-    public ResponseEntity<List<Ticket>> getAllTickets() {
-        List<Ticket> tickets = ticketRepository.findAll();
-        //implement page, and filters for id and subject
-        return ResponseEntity.ok().body(tickets);
+    public ResponseEntity<List<TicketDTO>> getAllTickets(
+            @RequestParam(required = false) Long id, @RequestParam(required = false) String subject) {
+
+        User currentUser = authenticationService.getCurrentUser();
+
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+
+        Ticket exampleTicket = new Ticket();
+        exampleTicket.setId(id);
+        exampleTicket.setSubject(subject);
+        exampleTicket.setUser(currentUser);
+        Example<Ticket> ticketFilters = Example.of(exampleTicket, matcher);
+
+
+        //TODO: List all tickets created by me
+        List<Ticket> tickets = ticketRepository.findAll(ticketFilters);
+
+        List<TicketDTO> ticketsResponse = tickets.stream().map(TicketDTO::new).toList();
+        //TODO: Implement page, and filters for id and subject
+        return ResponseEntity.ok().body(ticketsResponse);
     }
 
 

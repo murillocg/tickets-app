@@ -14,11 +14,12 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @CreatedDate
-//    @Column(name = "created_date", nullable = false)
-//    private LocalDateTime createdDate;
+    @Column(name = "created_date", nullable = false)
+    private LocalDateTime createdDate;
 
-    //private User user;
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(updatable = false)
+    private User user;
 
     private Status status;
 
@@ -36,13 +37,21 @@ public class Ticket {
         this.id = id;
     }
 
-//    public LocalDateTime getCreatedDate() {
-//        return createdDate;
-//    }
-//
-//    public void setCreatedDate(LocalDateTime createdDate) {
-//        this.createdDate = createdDate;
-//    }
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public Status getStatus() {
         return status;
