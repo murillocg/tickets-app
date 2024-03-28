@@ -1,6 +1,5 @@
 package com.murillocg.ticketapp.config;
 
-import com.murillocg.ticketapp.security.RestUnauthorizedEntryPoint;
 import com.murillocg.ticketapp.security.TokenAuthenticationFilter;
 import com.murillocg.ticketapp.service.UserDetailsSecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +29,10 @@ public class SecurityConfig {
 
     private final UserDetailsSecurityService userDetailsSecurityService;
 
-    private final RestUnauthorizedEntryPoint restUnauthorizedEntryPoint;
-
     @Autowired
-    public SecurityConfig(TokenAuthenticationFilter tokenAuthenticationFilter, UserDetailsSecurityService userDetailsSecurityService, RestUnauthorizedEntryPoint restUnauthorizedEntryPoint) {
+    public SecurityConfig(TokenAuthenticationFilter tokenAuthenticationFilter, UserDetailsSecurityService userDetailsSecurityService) {
         this.tokenAuthenticationFilter = tokenAuthenticationFilter;
         this.userDetailsSecurityService = userDetailsSecurityService;
-        this.restUnauthorizedEntryPoint = restUnauthorizedEntryPoint;
     }
 
     @Bean

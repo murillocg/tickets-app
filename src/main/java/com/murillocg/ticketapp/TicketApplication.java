@@ -23,6 +23,11 @@ public class TicketApplication {
 	public CommandLineRunner commandLineRunner(UserRepository userRepository) {
 		return args -> {
 
+			if (userRepository.count() > 0) {
+				logger.info("Users already have been created successfully");
+				return;
+			}
+
 			var admin = new User();
 			admin.setFirstName("Murillo");
 			admin.setLastName("Goulart");

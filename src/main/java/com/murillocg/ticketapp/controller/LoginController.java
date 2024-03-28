@@ -1,6 +1,7 @@
 package com.murillocg.ticketapp.controller;
 
 import com.murillocg.ticketapp.entity.User;
+import com.murillocg.ticketapp.model.LoginRequest;
 import com.murillocg.ticketapp.model.TokenResponseDTO;
 import com.murillocg.ticketapp.service.TokenService;
 import org.slf4j.Logger;
@@ -41,9 +42,6 @@ public class LoginController {
         String accessToken = tokenService.generateToken(user.getUsername());
 
         return ResponseEntity.ok(new TokenResponseDTO(accessToken));
-    }
-
-    public record LoginRequest(String username, String password) {
     }
 
 }

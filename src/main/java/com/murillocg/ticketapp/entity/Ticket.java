@@ -2,6 +2,8 @@ package com.murillocg.ticketapp.entity;
 
 import com.murillocg.ticketapp.enums.TicketStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -20,10 +22,13 @@ public class Ticket {
     @JoinColumn(updatable = false)
     private User user;
 
+    @NotNull
     private TicketStatus status;
 
+    @NotBlank
     private String subject;
 
+    @NotBlank
     private String message;
 
     private Integer rating;
