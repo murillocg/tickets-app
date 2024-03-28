@@ -1,8 +1,7 @@
 package com.murillocg.ticketapp.entity;
 
-import com.murillocg.ticketapp.enums.Status;
+import com.murillocg.ticketapp.enums.TicketStatus;
 import jakarta.persistence.*;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -21,7 +20,7 @@ public class Ticket {
     @JoinColumn(updatable = false)
     private User user;
 
-    private Status status;
+    private TicketStatus status;
 
     private String subject;
 
@@ -53,11 +52,11 @@ public class Ticket {
         this.user = user;
     }
 
-    public Status getStatus() {
+    public TicketStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(TicketStatus status) {
         this.status = status;
     }
 

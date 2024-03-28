@@ -1,1 +1,1 @@
-# tickets-app
+# Tickets Application

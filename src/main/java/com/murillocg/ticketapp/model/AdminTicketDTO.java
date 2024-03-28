@@ -1,11 +1,11 @@
 package com.murillocg.ticketapp.model;
 
 import com.murillocg.ticketapp.entity.Ticket;
-import com.murillocg.ticketapp.enums.Status;
+import com.murillocg.ticketapp.enums.TicketStatus;
 
 import java.time.LocalDateTime;
 
-public record AdminTicketDTO(Long id, LocalDateTime createdDate, String username, Status status, String subject, String message) {
+public record AdminTicketDTO(Long id, LocalDateTime createdDate, String username, TicketStatus status, String subject, String message) {
 
     public AdminTicketDTO(Ticket entity) {
         this(entity.getId(),

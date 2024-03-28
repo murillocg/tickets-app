@@ -1,7 +1,7 @@
 package com.murillocg.ticketapp.controller;
 
 import com.murillocg.ticketapp.entity.Ticket;
-import com.murillocg.ticketapp.enums.Status;
+import com.murillocg.ticketapp.enums.TicketStatus;
 import com.murillocg.ticketapp.model.AdminTicketDTO;
 import com.murillocg.ticketapp.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +17,12 @@ import java.util.List;
 
 @Transactional
 @RestController
-public class AdminController {
+public class AdminTicketController {
 
     private final TicketRepository ticketRepository;
 
     @Autowired
-    public AdminController(TicketRepository ticketRepository) {
+    public AdminTicketController(TicketRepository ticketRepository) {
         this.ticketRepository = ticketRepository;
     }
 
@@ -41,11 +41,11 @@ public class AdminController {
     @PostMapping("/api/admin/tickets/{id}/close")
     public ResponseEntity<Void> closeTicket(@PathVariable Long id) {
         Ticket ticket = ticketRepository.getReferenceById(id);
-        if (ticket.getStatus() == Status.CLOSED) {
+        if (ticket.getStatus() == TicketStatus.CLOSED) {
             return ResponseEntity.badRequest().build();
         }
 
-        ticket.setStatus(Status.CLOSED);
+        ticket.setStatus(TicketStatus.CLOSED);
         ticketRepository.save(ticket);
         return ResponseEntity.ok().build();
     }

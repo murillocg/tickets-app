@@ -3,9 +3,9 @@ package com.murillocg.ticketapp.controller;
 
 import com.murillocg.ticketapp.entity.Ticket;
 import com.murillocg.ticketapp.entity.User;
-import com.murillocg.ticketapp.enums.Status;
+import com.murillocg.ticketapp.enums.TicketStatus;
 import com.murillocg.ticketapp.model.NewTicketRequest;
-import com.murillocg.ticketapp.model.TicketDTO;
+import com.murillocg.ticketapp.model.UserTicketDTO;
 import com.murillocg.ticketapp.model.TicketRatingRequest;
 import com.murillocg.ticketapp.repository.TicketRepository;
 import com.murillocg.ticketapp.security.AuthenticationService;
@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,14 +25,14 @@ import java.util.List;
 
 @Transactional
 @RestController
-public class TicketController {
+public class UserTicketController {
 
     private final TicketRepository ticketRepository;
 
     private final AuthenticationService authenticationService;
 
     @Autowired
-    public TicketController(TicketRepository ticketRepository, AuthenticationService authenticationService) {
+    public UserTicketController(TicketRepository ticketRepository, AuthenticationService authenticationService) {
         this.ticketRepository = ticketRepository;
         this.authenticationService = authenticationService;
     }
@@ -42,7 +44,7 @@ public class TicketController {
         Ticket newTicket = new Ticket();
         newTicket.setCreatedDate(LocalDateTime.now());
         newTicket.setUser(currentUser);
-        newTicket.setStatus(Status.OPEN);
+        newTicket.setStatus(TicketStatus.OPEN);
         newTicket.setMessage(newTicketRequest.message());
         newTicket.setSubject(newTicketRequest.subject());
 
@@ -53,6 +55,7 @@ public class TicketController {
     @PostMapping("/api/tickets/{id}/rating")
     public ResponseEntity<Void> rateSolvedTicket(@PathVariable Long id,
                                                  @RequestBody @Valid TicketRatingRequest ticketRatingRequest) {
+        //TODO: Handle when ticket not found
         Ticket ticketToRate = ticketRepository.getReferenceById(id);
 
         User currentUser = authenticationService.getCurrentUser();
@@ -60,9 +63,10 @@ public class TicketController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        if (ticketToRate.getStatus() != Status.CLOSED) {
+        if (ticketToRate.getStatus() != TicketStatus.CLOSED) {
             return ResponseEntity.badRequest().build();
         }
+        //TODO: Validate rating between 0 and 5
         ticketToRate.setRating(ticketRatingRequest.rating());
         ticketRepository.save(ticketToRate);
         return ResponseEntity.ok().build();
@@ -70,7 +74,8 @@ public class TicketController {
 
     @GetMapping("/api/tickets")
     @Transactional(readOnly = true)
-    public ResponseEntity<List<TicketDTO>> getAllTickets(
+    public ResponseEntity<Page<UserTicketDTO>> getAllTickets(
+            Pageable pageable,
             @RequestParam(required = false) Long id, @RequestParam(required = false) String subject) {
 
         User currentUser = authenticationService.getCurrentUser();
@@ -84,13 +89,9 @@ public class TicketController {
         exampleTicket.setUser(currentUser);
         Example<Ticket> ticketFilters = Example.of(exampleTicket, matcher);
 
-
-        //TODO: List all tickets created by me
-        List<Ticket> tickets = ticketRepository.findAll(ticketFilters);
-
-        List<TicketDTO> ticketsResponse = tickets.stream().map(TicketDTO::new).toList();
-        //TODO: Implement page, and filters for id and subject
-        return ResponseEntity.ok().body(ticketsResponse);
+        Page<Ticket> ticketsPage = ticketRepository.findAll(ticketFilters, pageable);
+        Page<UserTicketDTO> ticketsPageResponse = ticketsPage.map(UserTicketDTO::new);
+        return ResponseEntity.ok().body(ticketsPageResponse);
     }
 
 

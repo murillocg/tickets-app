@@ -3,7 +3,6 @@ package com.murillocg.ticketapp;
 import com.murillocg.ticketapp.entity.User;
 import com.murillocg.ticketapp.enums.UserRole;
 import com.murillocg.ticketapp.repository.UserRepository;
-import com.murillocg.ticketapp.service.UserDetailsSecurityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -14,7 +13,7 @@ import org.springframework.context.annotation.Bean;
 @SpringBootApplication
 public class TicketApplication {
 
-	private static final Logger logger = LoggerFactory.getLogger(UserDetailsSecurityService.class);
+	private static final Logger logger = LoggerFactory.getLogger(TicketApplication.class);
 
 	public static void main(String[] args) {
 		SpringApplication.run(TicketApplication.class, args);

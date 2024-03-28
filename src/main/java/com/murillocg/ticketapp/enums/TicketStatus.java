@@ -1,6 +1,6 @@
 package com.murillocg.ticketapp.enums;
 
-public enum Status {
+public enum TicketStatus {
 
     OPEN, CLOSED;
 }
