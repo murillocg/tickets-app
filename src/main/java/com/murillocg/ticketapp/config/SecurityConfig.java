@@ -43,7 +43,6 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
                     .requestMatchers("/api/**").authenticated()
                 )
-                //.exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(restUnauthorizedEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
