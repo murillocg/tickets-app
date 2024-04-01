@@ -1,5 +1,6 @@
 package com.murillocg.ticketapp.config;
 
+import com.murillocg.ticketapp.security.RestUnauthorizedEntryPoint;
 import com.murillocg.ticketapp.security.TokenAuthenticationFilter;
 import com.murillocg.ticketapp.service.UserDetailsSecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -29,10 +31,13 @@ public class SecurityConfig {
 
     private final UserDetailsSecurityService userDetailsSecurityService;
 
+    private final RestUnauthorizedEntryPoint restAuthenticationEntryPoint;
+
     @Autowired
-    public SecurityConfig(TokenAuthenticationFilter tokenAuthenticationFilter, UserDetailsSecurityService userDetailsSecurityService) {
+    public SecurityConfig(TokenAuthenticationFilter tokenAuthenticationFilter, UserDetailsSecurityService userDetailsSecurityService, RestUnauthorizedEntryPoint restAuthenticationEntryPoint) {
         this.tokenAuthenticationFilter = tokenAuthenticationFilter;
         this.userDetailsSecurityService = userDetailsSecurityService;
+        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
     }
 
     @Bean
@@ -46,6 +51,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling((exceptions) -> exceptions
+                        .authenticationEntryPoint(restAuthenticationEntryPoint))
                 .build();
     }
 
