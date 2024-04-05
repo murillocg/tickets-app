@@ -55,18 +55,13 @@ public class UserTicketController {
     @PostMapping("/api/tickets/{id}/rating")
     public ResponseEntity<Void> rateSolvedTicket(@PathVariable Long id,
                                                  @RequestBody @Valid TicketRatingRequest ticketRatingRequest) {
-        //TODO: Handle when ticket not found
         Ticket ticketToRate = ticketRepository.getReferenceById(id);
 
-        User currentUser = authenticationService.getCurrentUser();
-        if (!ticketToRate.getUser().equals(currentUser)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
+        authenticationService.checkCurrentUserIsOwner(ticketToRate.getUser());
 
         if (ticketToRate.getStatus() != TicketStatus.CLOSED) {
             return ResponseEntity.badRequest().build();
         }
-        //TODO: Validate rating between 0 and 5
         ticketToRate.setRating(ticketRatingRequest.rating());
         ticketRepository.save(ticketToRate);
         return ResponseEntity.ok().build();

@@ -40,7 +40,6 @@ public class AdminTicketController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/api/admin/tickets/{id}/close")
     public ResponseEntity<Void> closeTicket(@PathVariable Long id) {
-        //TODO: What if the ticket does not exist?
         Ticket ticket = ticketRepository.getReferenceById(id);
         if (ticket.getStatus() == TicketStatus.CLOSED) {
             return ResponseEntity.badRequest().build();
