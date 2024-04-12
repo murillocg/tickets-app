@@ -2,7 +2,8 @@ package com.murillocg.ticketapp.controller;
 
 import com.murillocg.ticketapp.entity.User;
 import com.murillocg.ticketapp.model.LoginRequest;
-import com.murillocg.ticketapp.model.TokenResponseDTO;
+import com.murillocg.ticketapp.model.LoginResponseDTO;
+import com.murillocg.ticketapp.repository.UserRepository;
 import com.murillocg.ticketapp.service.TokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,23 +26,27 @@ public class LoginController {
 
     private final TokenService tokenService;
 
+    private final UserRepository userRepository;
+
     @Autowired
-    public LoginController(AuthenticationManager authenticationManager, TokenService tokenService) {
+    public LoginController(AuthenticationManager authenticationManager, TokenService tokenService, UserRepository userRepository) {
         this.authenticationManager = authenticationManager;
         this.tokenService = tokenService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/api/login")
-    public ResponseEntity<TokenResponseDTO> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequest loginRequest) {
         LOGGER.info("Login requested with the following data: {}", loginRequest);
         Authentication authenticationRequest =
                 UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.username(), loginRequest.password());
 
         Authentication auth = authenticationManager.authenticate(authenticationRequest);
-        UserDetails user = (UserDetails) auth.getPrincipal();
-        String accessToken = tokenService.generateToken(user.getUsername());
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+        String accessToken = tokenService.generateToken(userDetails.getUsername());
+        User user = userRepository.findOneByLogin(userDetails.getUsername());
 
-        return ResponseEntity.ok(new TokenResponseDTO(accessToken));
+        return ResponseEntity.ok(new LoginResponseDTO(user, accessToken));
     }
 
 }
